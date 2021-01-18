@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VGG16</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+        tr:nth-child(even) {background-color: #f2f2f2;}
+        th, td {padding: 10px;}
+        img{height: 300px; width: 300px}
+    </style>
+</head>
+<body>
+    <h2>Predict Image with VGG16</h2>
+
+    <h4>Select local image</h4>
+    <form action="{% url 'local_image'  %}" enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+        <input type="file" accept="image/*" name="image_file" id="local_image_file" onchange="local_image_change()">
+        <input type="submit" id="submit_button" style="display:none">
+    </form>
+
+    <h4>Copy web image url</h4>
+    <form action="{% url 'web_image'  %}" method="post">
+        {% csrf_token %}
+        {% if web_image_file %}
+            <input name="image_file" type="url" id="web_image_url"
+               value={{web_image_file}}
+               onchange="web_image_change()">
+        {% else %}
+            <input name="image_file" type="url" id="web_image_url2"
+               value="https://images.theconversation.com/files/308043/original/file-20191220-11924-iakhpb.jpeg?ixlib=rb-1.1.0&q=45&auto=format&w=754&fit=clip"
+               onchange="web_image_change2()">
+        {% endif %}
+        <input type="submit" >
+    </form>
+
+    <h4>VGG16 input image</h4>
+    {% if local_image_file %}
+        {% load static %}
+        <img id="selected_image3" src="{% static 'static-image.jpg' %}">
+    {% elif web_image_file %}
+        <img id="selected_image" src="{{web_image_file}}">
+    {% else %}
+        {% load static %}
+        <img id="selected_image2" src="{% static 'spider.jpg' %}">
+    {% endif %}
+
+    <h4>VGG16 Prediction Result</h4>
+    <table>
+        <tr>
+            <th>Object</th>
+            <th>Probability</th>
+        </tr>
+        {% for row in prediction %}
+            <tr>
+                {% for col in row %}
+                    {% if forloop.counter != 1 %}
+                        <td>{{ col|safe }}</td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+
+    <script>
+        function local_image_change(){
+           var img_input = document.getElementById("local_image_file")
+           try{document.getElementById("selected_image2").src = URL.createObjectURL(img_input.files[0])}catch(err){}
+           try{document.getElementById("selected_image3").src = URL.createObjectURL(img_input.files[0])}catch(err){}
+           document.getElementById("submit_button").click()
+        }
+
+        function web_image_change(){
+           document.getElementById("selected_image").src =  document.getElementById("web_image_url").value
+        }
+
+        function web_image_change2(){
+           document.getElementById("selected_image2").src =  document.getElementById("web_image_url2").value
+        }
+    </script>
+</body>
+</html>
